@@ -64,7 +64,7 @@ function compact(arr) {
 // sectionCard wrapt een sectie in een card-look (matched HTML .form-section):
 // - blauwe header-rij met witte titel-tekst
 // - witte body-rij met content
-// - unbreakable: hele sectie blijft op 1 pagina (anders breaks in middens)
+// - unbreakable verwijderd: pdfMake negeert de hint voor secties groter dan 1 pagina
 function sectionCard(title, bodyArray) {
   return {
     table: {
@@ -93,8 +93,7 @@ function sectionCard(title, bodyArray) {
       paddingTop: () => 0,
       paddingBottom: () => 0
     },
-    margin: [0, 0, 0, 12],
-    unbreakable: true
+    margin: [0, 0, 0, 12]
   };
 }
 

@@ -45,7 +45,7 @@ export function bindSyncButtons() {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
 
   let importing = false;
@@ -59,16 +59,28 @@ export function bindSyncButtons() {
     // Reset lock wanneer file picker wordt gesloten zonder selectie.
     // Chrome/Edge firen geen 'cancel' event maar wel window-focus retour;
     // korte setTimeout geeft 'change' kans om eerst te firen bij wel-selectie.
-    const resetOnFocus = () => {
-      window.removeEventListener('focus', resetOnFocus);
+    // Aanvullend: visibilitychange voor Samsung file-picker die geen focus-event firet.
+    const tryReset = () => {
       setTimeout(() => {
         if (!input.files || !input.files.length) importing = false;
       }, 300);
     };
+    const resetOnFocus = () => {
+      window.removeEventListener('focus', resetOnFocus);
+      tryReset();
+    };
+    const resetOnVisibility = () => {
+      if (!document.hidden) {
+        document.removeEventListener('visibilitychange', resetOnVisibility);
+        tryReset();
+      }
+    };
     window.addEventListener('focus', resetOnFocus);
+    document.addEventListener('visibilitychange', resetOnVisibility);
 
     input.onchange = async (e) => {
       window.removeEventListener('focus', resetOnFocus);
+      document.removeEventListener('visibilitychange', resetOnVisibility);
       try {
         const file = e.target.files[0];
         if (!file) return;

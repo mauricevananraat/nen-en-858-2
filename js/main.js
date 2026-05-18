@@ -184,8 +184,10 @@ document.getElementById('btn-save').addEventListener('click', () => {
   const datum = state.meta.rapportagedatum || new Date().toISOString().slice(0, 10);
   a.href = url;
   a.download = `inspectie-${projectnr}-${datum}.json`;
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
 
 document.getElementById('btn-load').addEventListener('click', () => {

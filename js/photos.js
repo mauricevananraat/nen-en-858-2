@@ -36,7 +36,7 @@ export function compressDataUrl(dataUrl, maxSize = 1600, quality = 0.85) {
       }
     };
     img.onerror = fallback;
-    setTimeout(fallback, 200);
+    setTimeout(fallback, 5000);
     img.src = dataUrl;
   });
 }
