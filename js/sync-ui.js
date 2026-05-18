@@ -55,7 +55,20 @@ export function bindSyncButtons() {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'application/json';
+
+    // Reset lock wanneer file picker wordt gesloten zonder selectie.
+    // Chrome/Edge firen geen 'cancel' event maar wel window-focus retour;
+    // korte setTimeout geeft 'change' kans om eerst te firen bij wel-selectie.
+    const resetOnFocus = () => {
+      window.removeEventListener('focus', resetOnFocus);
+      setTimeout(() => {
+        if (!input.files || !input.files.length) importing = false;
+      }, 300);
+    };
+    window.addEventListener('focus', resetOnFocus);
+
     input.onchange = async (e) => {
+      window.removeEventListener('focus', resetOnFocus);
       try {
         const file = e.target.files[0];
         if (!file) return;
