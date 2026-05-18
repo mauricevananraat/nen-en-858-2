@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { loadDb, saveDb, STORAGE_KEY, CURRENT_VERSION } from '../js/database.js';
+import { slugify, uniqueSlug } from '../js/database.js';
 
 describe('loadDb / saveDb', () => {
   beforeEach(() => {
@@ -42,5 +43,41 @@ describe('loadDb / saveDb', () => {
       klanten: [],
       voorzieningen: []
     });
+  });
+});
+
+describe('slugify', () => {
+  it('zet "Uniper Leiden" om naar "uniper-leiden"', () => {
+    expect(slugify('Uniper Leiden')).toBe('uniper-leiden');
+  });
+
+  it('handelt diacrieten af', () => {
+    expect(slugify('Café René')).toBe('caf-ren');
+  });
+
+  it('strip leading/trailing dashes', () => {
+    expect(slugify('  Hallo!  ')).toBe('hallo');
+  });
+
+  it('returnt lege string voor lege input', () => {
+    expect(slugify('')).toBe('');
+  });
+
+  it('returnt lege string voor enkel speciale tekens', () => {
+    expect(slugify('@#$%')).toBe('');
+  });
+});
+
+describe('uniqueSlug', () => {
+  it('returnt base als deze niet conflicteert', () => {
+    expect(uniqueSlug('test', ['foo', 'bar'])).toBe('test');
+  });
+
+  it('voegt -2 toe bij eerste collision', () => {
+    expect(uniqueSlug('test', ['test'])).toBe('test-2');
+  });
+
+  it('voegt -3 toe bij tweede collision', () => {
+    expect(uniqueSlug('test', ['test', 'test-2'])).toBe('test-3');
   });
 });

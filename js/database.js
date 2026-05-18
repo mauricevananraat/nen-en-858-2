@@ -23,3 +23,17 @@ export function loadDb() {
 export function saveDb(db) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
 }
+
+export function slugify(text) {
+  return String(text || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+export function uniqueSlug(base, existingIds) {
+  if (!existingIds.includes(base)) return base;
+  let n = 2;
+  while (existingIds.includes(`${base}-${n}`)) n++;
+  return `${base}-${n}`;
+}
