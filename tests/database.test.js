@@ -167,6 +167,38 @@ describe('deleteKlant', () => {
   });
 });
 
+describe('deleteKlant — cascade', () => {
+  it('verwijdert ook alle voorzieningen van die klant', () => {
+    const db = {
+      versie: 1,
+      klanten: [
+        { id: 'uniper', bedrijfsnaam: 'Uniper' },
+        { id: 'garage', bedrijfsnaam: 'Garage' }
+      ],
+      voorzieningen: [
+        { id: 'u1', klant_id: 'uniper', naam: 'U1' },
+        { id: 'u2', klant_id: 'uniper', naam: 'U2' },
+        { id: 'g1', klant_id: 'garage', naam: 'G1' }
+      ]
+    };
+    const newDb = deleteKlant(db, 'uniper');
+    expect(newDb.klanten).toHaveLength(1);
+    expect(newDb.klanten[0].id).toBe('garage');
+    expect(newDb.voorzieningen).toHaveLength(1);
+    expect(newDb.voorzieningen[0].id).toBe('g1');
+  });
+
+  it('laat voorzieningen ongemoeid bij onbekende klant-id', () => {
+    const db = {
+      versie: 1,
+      klanten: [{ id: 'a' }],
+      voorzieningen: [{ id: 'v1', klant_id: 'a' }]
+    };
+    const newDb = deleteKlant(db, 'onbekend');
+    expect(newDb.voorzieningen).toHaveLength(1);
+  });
+});
+
 describe('addVoorziening', () => {
   it('voegt voorziening toe met id uit naam + aangemaakt-datum', () => {
     const db = {

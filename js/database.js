@@ -70,9 +70,9 @@ export function updateKlant(db, id, patch) {
 export function deleteKlant(db, id) {
   return {
     ...db,
-    klanten: db.klanten.filter(k => k.id !== id)
+    klanten: db.klanten.filter(k => k.id !== id),
+    voorzieningen: db.voorzieningen.filter(v => v.klant_id !== id)
   };
-  // NOTE: cascade naar voorzieningen komt in Task 5
 }
 
 export function addVoorziening(db, voorziening) {
