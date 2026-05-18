@@ -70,6 +70,34 @@ Resultaat:
 - Robuustheid: idempotency-guard na null-check, anchor in DOM voor download, import-lock tegen dubbel-klik
 - 11 nieuwe tests in `tests/sync-ui.test.js` (10 actief + 1 skipped) — totaal 249 groen + 1 skipped
 
-## Volgende fase
+## Fase 6 — Hosting + Acceptance test ✓ Afgerond op 2026-05-18
 
-Fase 6 — Hosting op GitHub Pages + mobiele test op telefoon.
+Resultaat:
+- Tool **live** op https://mauricevananraat.github.io/nen-en-858-2/
+- Public GitHub-repo: https://github.com/mauricevananraat/nen-en-858-2
+- GitHub Pages serveert `main` branch op root, automatische deploy bij elke push
+- README.md publicatie-klaar met privacy-disclaimer, update-instructies en mobiele instructies
+- `.gitignore` valideert: `PROMPTS.md` blijft privé (niet getrackt op GitHub)
+- Acceptance-checklist 19/20 PASS + 1 SKIP-HARDWARE (camera-flow)
+  - Maurice testte handmatig items 1-6 op echte Samsung Galaxy S24
+  - Playwright geautomatiseerd items 1-20 op mobile viewport
+  - Volledig rapport: `docs/fase6-acceptance-rapport-2026-05-18.md`
+- Code-audit gevonden + gefixt vóór deployment: **5 Critical + 4 Important bugs**
+  - C1: `importDb` duidelijke foutmelding bij verkeerd bestandstype
+  - C2: Concept laden persistent (geen reload-data-loss meer)
+  - C3: Database-bestand via Concept laden geweigerd met duidelijke uitleg
+  - C4: `state.installatie` reset na voorziening-delete (geen stale data in PDF)
+  - C5: `bindFields` idempotent via `dataset.boundField` marker (geen dubbele listeners)
+  - I1: Blob-URL revoke met setTimeout 1000ms (Android Chrome download race)
+  - I2: Foto-compressie timeout 200ms → 5000ms (12MP foto's op mobiel)
+  - I3: `importJson` wrapt JSON.parse-fouten met context
+  - I4: Deep-merge bij concept-import zodat ontbrekende keys defaults krijgen
+  - I5: `visibilitychange` als extra reset voor import-lock op Android
+  - I6: `unbreakable: true` van top-level `sectionCard` verwijderd (pdfMake-werking bij veel foto's)
+- Tests-status: **255 groen + 1 skipped** (was 249 + 1 vóór Fase 6)
+
+## Fase 7-backlog (afhankelijk van praktijkgebruik)
+
+- **Fase 7a (mogelijk):** PWA-laag voor offline gebruik op locatie (service worker + manifest) — alleen als bereik in de praktijk een probleem blijkt
+- **Fase 7b (mogelijk):** UX-polish: custom mode-modal voor import (i.p.v. confirm()), emoji-consistentie sync-knoppen, andere items uit acceptance-rapport
+- **Fase 7c (mogelijk):** Custom domain (bv. `inspectie.symitech.nl`)

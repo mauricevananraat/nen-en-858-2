@@ -2,7 +2,7 @@
 
 Inspectietool voor Olie/Benzine Afscheidingsinstallaties (OBAS) volgens NEN-EN 858-2. Ondersteunt halfjaarlijkse, jaarlijkse en 5-jaarlijkse controles. Genereert PDF-rapportages volgens Symitech huisstijl.
 
-**Live:** `<PAGES_URL>` *(URL invullen na Task 5)*
+**Live:** https://mauricevananraat.github.io/nen-en-858-2/
 
 ## Openen op laptop
 
