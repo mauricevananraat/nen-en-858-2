@@ -239,6 +239,74 @@ describe('bindKlantDropdown — keuze-flow', () => {
   });
 });
 
+import { refreshVoorzieningDropdown } from '../js/dropdown-binding.js';
+
+describe('refreshVoorzieningDropdown', () => {
+  beforeEach(() => localStorage.clear());
+
+  function makeFullContainer() {
+    const c = document.createElement('div');
+    c.innerHTML = `
+      <select data-picker="klant"><option value="">— kies klant —</option></select>
+      <select data-picker="voorziening"><option value="">— kies klant eerst —</option></select>
+      <button data-action="voorziening-new" disabled>+</button>
+      <button data-action="voorziening-edit" disabled>✎</button>
+      <button data-action="voorziening-delete" disabled>🗑</button>
+    `;
+    return c;
+  }
+
+  it('zonder klant_id: dropdown bevat alleen placeholder en is disabled', () => {
+    const container = makeFullContainer();
+    refreshVoorzieningDropdown(container, null);
+    const select = container.querySelector('[data-picker="voorziening"]');
+    expect(select.disabled).toBe(true);
+    expect(select.querySelectorAll('option')).toHaveLength(1);
+    expect(container.querySelector('[data-action="voorziening-new"]').disabled).toBe(true);
+  });
+
+  it('met klant_id: dropdown enabled + + knop enabled', () => {
+    saveDb({
+      versie: 1,
+      klanten: [{ id: 'uniper' }],
+      voorzieningen: [
+        { id: 'v1', klant_id: 'uniper', naam: 'V1' }
+      ]
+    });
+    const container = makeFullContainer();
+    refreshVoorzieningDropdown(container, 'uniper');
+    const select = container.querySelector('[data-picker="voorziening"]');
+    expect(select.disabled).toBe(false);
+    expect(container.querySelector('[data-action="voorziening-new"]').disabled).toBe(false);
+  });
+
+  it('toont alleen voorzieningen van gekozen klant', () => {
+    saveDb({
+      versie: 1,
+      klanten: [{ id: 'a' }, { id: 'b' }],
+      voorzieningen: [
+        { id: 'a1', klant_id: 'a', naam: 'A1' },
+        { id: 'b1', klant_id: 'b', naam: 'B1' },
+        { id: 'a2', klant_id: 'a', naam: 'A2' }
+      ]
+    });
+    const container = makeFullContainer();
+    refreshVoorzieningDropdown(container, 'a');
+    const opts = [...container.querySelector('[data-picker="voorziening"]').querySelectorAll('option')];
+    expect(opts).toHaveLength(3); // placeholder + 2 voorzieningen van klant a
+    expect(opts[1].textContent).toBe('A1');
+    expect(opts[2].textContent).toBe('A2');
+  });
+
+  it('placeholder-tekst is "— kies voorziening —" als klant gekozen', () => {
+    saveDb({ versie: 1, klanten: [{ id: 'a' }], voorzieningen: [] });
+    const container = makeFullContainer();
+    refreshVoorzieningDropdown(container, 'a');
+    const placeholder = container.querySelector('[data-picker="voorziening"] option');
+    expect(placeholder.textContent).toBe('— kies voorziening —');
+  });
+});
+
 describe('applyVoorzieningToState', () => {
   it('kopieert alle 12 installatie-velden naar state.installatie', () => {
     const s = createState();

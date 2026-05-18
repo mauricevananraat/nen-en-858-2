@@ -120,3 +120,34 @@ export function bindKlantDropdown(container, state, syncDom) {
 export function _resetBindGuard(container) {
   delete container.dataset.klantDropdownBound;
 }
+
+export function refreshVoorzieningDropdown(container, klantId) {
+  const select = container.querySelector('[data-picker="voorziening"]');
+  const newBtn = container.querySelector('[data-action="voorziening-new"]');
+  const editBtn = container.querySelector('[data-action="voorziening-edit"]');
+  const deleteBtn = container.querySelector('[data-action="voorziening-delete"]');
+  if (!select) return;
+
+  if (!klantId) {
+    select.disabled = true;
+    select.innerHTML = '<option value="">— kies klant eerst —</option>';
+    if (newBtn) newBtn.disabled = true;
+    if (editBtn) editBtn.disabled = true;
+    if (deleteBtn) deleteBtn.disabled = true;
+    return;
+  }
+
+  select.disabled = false;
+  if (newBtn) newBtn.disabled = false;
+  select.innerHTML = '<option value="">— kies voorziening —</option>';
+  const voorzieningen = getVoorzieningenVoor(loadDb(), klantId);
+  voorzieningen.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v.id;
+    opt.textContent = v.naam;
+    select.appendChild(opt);
+  });
+  // Edit + delete blijven disabled tot keuze
+  if (editBtn) editBtn.disabled = true;
+  if (deleteBtn) deleteBtn.disabled = true;
+}
