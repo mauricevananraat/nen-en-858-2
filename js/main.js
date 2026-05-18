@@ -17,7 +17,8 @@ import { initPhotoSlots } from './photos.js';
 import { populateTestData, isTestMode } from './test-data.js';
 import { getField } from './state.js';
 import { initKlantModal, openKlantModalNew, openKlantModalEdit } from './klant-modal.js';
-import { bindKlantDropdown, refreshKlantDropdown, applyKlantToState } from './dropdown-binding.js';
+import { initVoorzieningModal, openVoorzieningModalNew, openVoorzieningModalEdit } from './voorziening-modal.js';
+import { bindKlantDropdown, refreshKlantDropdown, applyKlantToState, bindVoorzieningDropdown, refreshVoorzieningDropdown, applyVoorzieningToState } from './dropdown-binding.js';
 import { loadDb } from './database.js';
 
 const state = createState();
@@ -88,8 +89,6 @@ initPhotoSlots(sectiesContainer, state);
 // --- Fase 3: Klanten-UI ---
 
 initKlantModal((newDb) => {
-  // Na opslaan in modal: dropdown verversen + als de huidige selectie de bewerkte
-  // klant is, state opnieuw vullen zodat het formulier de nieuwe waardes toont.
   refreshKlantDropdown(sectiesContainer);
   const selectedId = sectiesContainer.querySelector('[data-picker="klant"]').value;
   if (selectedId) {
@@ -101,9 +100,30 @@ initKlantModal((newDb) => {
   }
 });
 
-bindKlantDropdown(sectiesContainer, state, syncDomFromState);
+// --- Fase 4: Voorzieningen-UI ---
 
-// Wire "+ Nieuw klant" en "✎ Bewerken" knoppen
+initVoorzieningModal((newDb) => {
+  // Na opslaan: ververs dropdown voor huidige klant + sync als bewerkte voorziening nog gekozen
+  const klantId = sectiesContainer.querySelector('[data-picker="klant"]').value;
+  refreshVoorzieningDropdown(sectiesContainer, klantId || null);
+  const voorzId = sectiesContainer.querySelector('[data-picker="voorziening"]').value;
+  if (voorzId) {
+    const v = newDb.voorzieningen.find(x => x.id === voorzId);
+    if (v) {
+      applyVoorzieningToState(v, state);
+      syncDomFromState();
+    }
+  }
+});
+
+// Klant-dropdown: bij wijziging ververst voorziening-dropdown met klant-filter
+bindKlantDropdown(sectiesContainer, state, syncDomFromState, (klantId) => {
+  refreshVoorzieningDropdown(sectiesContainer, klantId);
+});
+
+bindVoorzieningDropdown(sectiesContainer, state, syncDomFromState);
+
+// Wire "+ Nieuw klant" en "✎ Bewerken" knoppen (fase 3)
 const klantNewBtn = sectiesContainer.querySelector('[data-action="klant-new"]');
 if (klantNewBtn) {
   klantNewBtn.addEventListener('click', () => openKlantModalNew());
@@ -116,6 +136,26 @@ if (klantEditBtn) {
     const db = loadDb();
     const klant = db.klanten.find(k => k.id === klantId);
     if (klant) openKlantModalEdit(klant);
+  });
+}
+
+// Wire "+ Nieuw voorziening" en "✎ Bewerken" knoppen (fase 4)
+const voorzNewBtn = sectiesContainer.querySelector('[data-action="voorziening-new"]');
+if (voorzNewBtn) {
+  voorzNewBtn.addEventListener('click', () => {
+    const klantId = sectiesContainer.querySelector('[data-picker="klant"]').value;
+    if (!klantId) return; // knop is disabled zonder klant maar guard voor zekerheid
+    openVoorzieningModalNew(klantId);
+  });
+}
+const voorzEditBtn = sectiesContainer.querySelector('[data-action="voorziening-edit"]');
+if (voorzEditBtn) {
+  voorzEditBtn.addEventListener('click', () => {
+    const id = sectiesContainer.querySelector('[data-picker="voorziening"]').value;
+    if (!id) return;
+    const db = loadDb();
+    const v = db.voorzieningen.find(x => x.id === id);
+    if (v) openVoorzieningModalEdit(v);
   });
 }
 
