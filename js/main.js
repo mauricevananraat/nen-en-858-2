@@ -18,7 +18,7 @@ import { populateTestData, isTestMode } from './test-data.js';
 import { getField } from './state.js';
 import { initKlantModal, openKlantModalNew, openKlantModalEdit } from './klant-modal.js';
 import { initVoorzieningModal, openVoorzieningModalNew, openVoorzieningModalEdit } from './voorziening-modal.js';
-import { bindKlantDropdown, refreshKlantDropdown, applyKlantToState, bindVoorzieningDropdown, refreshVoorzieningDropdown, applyVoorzieningToState } from './dropdown-binding.js';
+import { bindKlantDropdown, refreshKlantDropdown, applyKlantToState, bindVoorzieningDropdown, refreshVoorzieningDropdown, applyVoorzieningToState, resetInstallatieState } from './dropdown-binding.js';
 import { loadDb } from './database.js';
 
 const state = createState();
@@ -117,8 +117,11 @@ initVoorzieningModal((newDb) => {
 });
 
 // Klant-dropdown: bij wijziging ververst voorziening-dropdown met klant-filter
+// + reset state.installatie zodat oude voorziening-data niet doorlekt naar PDF
 bindKlantDropdown(sectiesContainer, state, syncDomFromState, (klantId) => {
   refreshVoorzieningDropdown(sectiesContainer, klantId);
+  resetInstallatieState(state);
+  syncDomFromState();
 });
 
 bindVoorzieningDropdown(sectiesContainer, state, syncDomFromState);

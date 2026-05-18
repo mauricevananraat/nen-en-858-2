@@ -31,6 +31,13 @@ export function applyVoorzieningToState(voorziening, state) {
   INSTALLATIE_VELDEN.forEach(f => setField(state, `installatie.${f}`, voorziening[f] || ''));
 }
 
+// Reset state.installatie naar lege strings — gebruikt bij klant-wissel
+// om te voorkomen dat voorziening-data van een vorige klant blijft hangen
+// in het formulier (en in de PDF-export).
+export function resetInstallatieState(state) {
+  INSTALLATIE_VELDEN.forEach(f => setField(state, `installatie.${f}`, ''));
+}
+
 export function refreshKlantDropdown(container) {
   const select = container.querySelector('[data-picker="klant"]');
   if (!select) return;

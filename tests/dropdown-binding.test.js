@@ -503,3 +503,26 @@ describe('bindKlantDropdown — onKlantChange callback', () => {
     }
   });
 });
+
+import { resetInstallatieState } from '../js/dropdown-binding.js';
+
+describe('resetInstallatieState', () => {
+  it('zet alle 12 installatie-velden terug naar lege string', () => {
+    const s = createState();
+    s.installatie.merk = 'ACO';
+    s.installatie.type_bouwjaar = 'NSF-100';
+    s.installatie.ns_klasse = 'I';
+    s.installatie.capaciteit_l = '1000';
+    s.installatie.type_lozing = 'Vrij verval riool';
+    s.installatie.lozingsvergunning_kenmerk = 'WSL-123';
+
+    resetInstallatieState(s);
+
+    expect(s.installatie.merk).toBe('');
+    expect(s.installatie.type_bouwjaar).toBe('');
+    expect(s.installatie.ns_klasse).toBe('');
+    expect(s.installatie.capaciteit_l).toBe('');
+    expect(s.installatie.type_lozing).toBe('');
+    expect(s.installatie.lozingsvergunning_kenmerk).toBe('');
+  });
+});
