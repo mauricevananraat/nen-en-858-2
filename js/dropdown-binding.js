@@ -1,5 +1,5 @@
 import { setField } from './state.js';
-import { loadDb, saveDb, deleteKlant, getVoorzieningenVoor } from './database.js';
+import { loadDb, saveDb, deleteKlant, deleteVoorziening, getVoorzieningenVoor } from './database.js';
 
 const KLANT_VELDEN = ['bedrijfsnaam', 'adres', 'postcode_plaats', 'contactpersoon'];
 
@@ -150,4 +150,51 @@ export function refreshVoorzieningDropdown(container, klantId) {
   // Edit + delete blijven disabled tot keuze
   if (editBtn) editBtn.disabled = true;
   if (deleteBtn) deleteBtn.disabled = true;
+}
+
+export function bindVoorzieningDropdown(container, state, syncDom) {
+  if (container.dataset.voorzieningDropdownBound === '1') return;
+  container.dataset.voorzieningDropdownBound = '1';
+
+  const select = container.querySelector('[data-picker="voorziening"]');
+  const editBtn = container.querySelector('[data-action="voorziening-edit"]');
+  const deleteBtn = container.querySelector('[data-action="voorziening-delete"]');
+
+  select.addEventListener('change', () => {
+    const id = select.value;
+    if (!id) {
+      editBtn.disabled = true;
+      deleteBtn.disabled = true;
+      return;
+    }
+    const db = loadDb();
+    const voorziening = db.voorzieningen.find(v => v.id === id);
+    if (!voorziening) return;
+    applyVoorzieningToState(voorziening, state);
+    if (syncDom) syncDom();
+    editBtn.disabled = false;
+    deleteBtn.disabled = false;
+  });
+
+  deleteBtn.addEventListener('click', () => {
+    const db = loadDb();
+    const voorziening = db.voorzieningen.find(v => v.id === select.value);
+    if (!voorziening) return;
+    if (!confirm(`Weet je zeker dat je voorziening "${voorziening.naam}" wilt verwijderen?`)) return;
+    const newDb = deleteVoorziening(db, voorziening.id);
+    try {
+      saveDb(newDb);
+    } catch (e) {
+      alert(e.message);
+      return;
+    }
+    refreshVoorzieningDropdown(container, voorziening.klant_id);
+    editBtn.disabled = true;
+    deleteBtn.disabled = true;
+  });
+}
+
+// Test helper — reset idempotency-guard
+export function _resetVoorzieningBindGuard(container) {
+  delete container.dataset.voorzieningDropdownBound;
 }

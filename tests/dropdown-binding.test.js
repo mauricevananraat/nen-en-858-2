@@ -307,6 +307,87 @@ describe('refreshVoorzieningDropdown', () => {
   });
 });
 
+import { bindVoorzieningDropdown } from '../js/dropdown-binding.js';
+
+describe('bindVoorzieningDropdown — keuze + delete', () => {
+  function makeFullContainer() {
+    const c = document.createElement('div');
+    c.innerHTML = `
+      <select data-picker="klant"><option value="">— kies klant —</option></select>
+      <select data-picker="voorziening"><option value="">— kies klant eerst —</option></select>
+      <button data-action="voorziening-new" disabled>+</button>
+      <button data-action="voorziening-edit" disabled>✎</button>
+      <button data-action="voorziening-delete" disabled>🗑</button>
+    `;
+    return c;
+  }
+
+  beforeEach(() => localStorage.clear());
+
+  it('bij voorziening-keuze: edit + delete worden enabled', () => {
+    saveDb({
+      versie: 1,
+      klanten: [{ id: 'u' }],
+      voorzieningen: [{ id: 'v1', klant_id: 'u', naam: 'V1', merk: 'ACO' }]
+    });
+    const container = makeFullContainer();
+    const state = createState();
+    bindVoorzieningDropdown(container, state);
+    refreshVoorzieningDropdown(container, 'u');
+    const select = container.querySelector('[data-picker="voorziening"]');
+    select.value = 'v1';
+    select.dispatchEvent(new Event('change'));
+    expect(container.querySelector('[data-action="voorziening-edit"]').disabled).toBe(false);
+    expect(container.querySelector('[data-action="voorziening-delete"]').disabled).toBe(false);
+  });
+
+  it('bij voorziening-keuze: state.installatie wordt gevuld', () => {
+    saveDb({
+      versie: 1,
+      klanten: [{ id: 'u' }],
+      voorzieningen: [{
+        id: 'v1', klant_id: 'u', naam: 'V1',
+        merk: 'ACO', ns_klasse: 'I', capaciteit_l: '1000'
+      }]
+    });
+    const container = makeFullContainer();
+    const state = createState();
+    bindVoorzieningDropdown(container, state);
+    refreshVoorzieningDropdown(container, 'u');
+    const select = container.querySelector('[data-picker="voorziening"]');
+    select.value = 'v1';
+    select.dispatchEvent(new Event('change'));
+    expect(state.installatie.merk).toBe('ACO');
+    expect(state.installatie.ns_klasse).toBe('I');
+    expect(state.installatie.capaciteit_l).toBe('1000');
+  });
+
+  it('delete-knop vraagt confirm en verwijdert na ok', () => {
+    saveDb({
+      versie: 1,
+      klanten: [{ id: 'u' }],
+      voorzieningen: [{ id: 'v1', klant_id: 'u', naam: 'V1' }]
+    });
+    const container = makeFullContainer();
+    const state = createState();
+    bindVoorzieningDropdown(container, state);
+    refreshVoorzieningDropdown(container, 'u');
+    const select = container.querySelector('[data-picker="voorziening"]');
+    select.value = 'v1';
+    select.dispatchEvent(new Event('change'));
+
+    const origConfirm = window.confirm;
+    window.confirm = () => true;
+    try {
+      container.querySelector('[data-action="voorziening-delete"]').click();
+      const db = JSON.parse(localStorage.getItem('nen858-database'));
+      expect(db.voorzieningen).toHaveLength(0);
+    } finally {
+      window.confirm = origConfirm;
+    }
+  });
+});
+
 describe('applyVoorzieningToState', () => {
   it('kopieert alle 12 installatie-velden naar state.installatie', () => {
     const s = createState();
