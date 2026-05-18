@@ -88,13 +88,19 @@ initPhotoSlots(sectiesContainer, state);
 
 // --- Fase 3: Klanten-UI ---
 
-initKlantModal((newDb) => {
+initKlantModal((newDb, savedKlantId) => {
   refreshKlantDropdown(sectiesContainer);
-  const selectedId = sectiesContainer.querySelector('[data-picker="klant"]').value;
-  if (selectedId) {
-    const klant = newDb.klanten.find(k => k.id === selectedId);
+  // Selecteer de zojuist opgeslagen klant in de dropdown en activeer alle vervolg-acties
+  // (apply state, enable knoppen, refresh voorziening-dropdown).
+  if (savedKlantId) {
+    const klant = newDb.klanten.find(k => k.id === savedKlantId);
     if (klant) {
+      const select = sectiesContainer.querySelector('[data-picker="klant"]');
+      select.value = savedKlantId;
       applyKlantToState(klant, state);
+      sectiesContainer.querySelector('[data-action="klant-edit"]').disabled = false;
+      sectiesContainer.querySelector('[data-action="klant-delete"]').disabled = false;
+      refreshVoorzieningDropdown(sectiesContainer, savedKlantId);
       syncDomFromState();
     }
   }
@@ -102,15 +108,19 @@ initKlantModal((newDb) => {
 
 // --- Fase 4: Voorzieningen-UI ---
 
-initVoorzieningModal((newDb) => {
-  // Na opslaan: ververs dropdown voor huidige klant + sync als bewerkte voorziening nog gekozen
+initVoorzieningModal((newDb, savedVoorzieningId) => {
+  // Na opslaan: ververs dropdown voor huidige klant + selecteer de zojuist
+  // opgeslagen voorziening + pas state.installatie aan.
   const klantId = sectiesContainer.querySelector('[data-picker="klant"]').value;
   refreshVoorzieningDropdown(sectiesContainer, klantId || null);
-  const voorzId = sectiesContainer.querySelector('[data-picker="voorziening"]').value;
-  if (voorzId) {
-    const v = newDb.voorzieningen.find(x => x.id === voorzId);
+  if (savedVoorzieningId) {
+    const v = newDb.voorzieningen.find(x => x.id === savedVoorzieningId);
     if (v) {
+      const select = sectiesContainer.querySelector('[data-picker="voorziening"]');
+      select.value = savedVoorzieningId;
       applyVoorzieningToState(v, state);
+      sectiesContainer.querySelector('[data-action="voorziening-edit"]').disabled = false;
+      sectiesContainer.querySelector('[data-action="voorziening-delete"]').disabled = false;
       syncDomFromState();
     }
   }

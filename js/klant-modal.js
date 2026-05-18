@@ -112,10 +112,14 @@ function handleSave() {
   }
 
   let db = loadDb();
+  let savedKlantId;
   if (editingKlantId) {
     db = updateKlant(db, editingKlantId, data);
+    savedKlantId = editingKlantId;
   } else {
     db = addKlant(db, data);
+    // addKlant appendt aan einde van klanten-array — pak laatste id
+    savedKlantId = db.klanten[db.klanten.length - 1].id;
   }
   try {
     saveDb(db);
@@ -124,7 +128,7 @@ function handleSave() {
     return;
   }
   closeModal(modalEl);
-  if (onSaveCallback) onSaveCallback(db);
+  if (onSaveCallback) onSaveCallback(db, savedKlantId);
 }
 
 export function openKlantModalNew() {

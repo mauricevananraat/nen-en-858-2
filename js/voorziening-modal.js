@@ -172,10 +172,13 @@ function handleSave() {
   }
 
   let db = loadDb();
+  let savedVoorzieningId;
   if (editingVoorzieningId) {
     db = updateVoorziening(db, editingVoorzieningId, data);
+    savedVoorzieningId = editingVoorzieningId;
   } else {
     db = addVoorziening(db, data);
+    savedVoorzieningId = db.voorzieningen[db.voorzieningen.length - 1].id;
   }
   try {
     saveDb(db);
@@ -184,7 +187,7 @@ function handleSave() {
     return;
   }
   closeModal(modalEl);
-  if (onSaveCallback) onSaveCallback(db);
+  if (onSaveCallback) onSaveCallback(db, savedVoorzieningId);
 }
 
 export function _resetForTests() {
