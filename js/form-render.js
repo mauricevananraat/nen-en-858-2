@@ -23,6 +23,26 @@ export function renderSection1Projectgegevens(container, state) {
     <section class="form-section" data-section="projectgegevens">
       <header class="section-title">1. Projectgegevens</header>
       <div class="section-body">
+        <div class="entity-picker">
+          <div class="entity-picker-row">
+            <label class="entity-picker-label">Klant</label>
+            <select class="field-input entity-picker-select" data-picker="klant">
+              <option value="">— kies klant —</option>
+            </select>
+            <button type="button" class="btn-icon" data-action="klant-new" title="Nieuwe klant">+</button>
+            <button type="button" class="btn-icon" data-action="klant-edit" title="Klant bewerken" disabled>✎</button>
+            <button type="button" class="btn-icon" data-action="klant-delete" title="Klant verwijderen" disabled>🗑</button>
+          </div>
+          <div class="entity-picker-row">
+            <label class="entity-picker-label">Voorziening</label>
+            <select class="field-input entity-picker-select" data-picker="voorziening">
+              <option value="">— kies klant eerst —</option>
+            </select>
+            <button type="button" class="btn-icon" data-action="voorziening-new" title="Nieuwe voorziening" disabled>+</button>
+            <button type="button" class="btn-icon" data-action="voorziening-edit" title="Voorziening bewerken" disabled>✎</button>
+            <button type="button" class="btn-icon" data-action="voorziening-delete" title="Voorziening verwijderen" disabled>🗑</button>
+          </div>
+        </div>
         <div class="grid-2">
           <fieldset>
             <legend>Locatie</legend>

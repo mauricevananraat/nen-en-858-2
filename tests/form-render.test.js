@@ -470,3 +470,41 @@ describe('renderSectionChecklistObas — fase 4 (24-punt visuele checklist)', ()
     expect(state.checklist_obas.opbouw_obas.opmerking).toBe('Lichte corrosie zichtbaar');
   });
 });
+
+describe('renderSection1Projectgegevens — fase 3 entity-picker', () => {
+  let container, state;
+  beforeEach(() => {
+    container = document.createElement('div');
+    state = createState();
+    renderSection1Projectgegevens(container, state);
+  });
+
+  it('bevat een entity-picker blok bovenaan sectie 1', () => {
+    expect(container.querySelector('.entity-picker')).toBeTruthy();
+  });
+
+  it('heeft een klant-dropdown met data-picker="klant"', () => {
+    expect(container.querySelector('select[data-picker="klant"]')).toBeTruthy();
+  });
+
+  it('heeft een voorziening-dropdown met data-picker="voorziening" (placeholder voor fase 4)', () => {
+    expect(container.querySelector('select[data-picker="voorziening"]')).toBeTruthy();
+  });
+
+  it('heeft klant-actie knoppen: nieuw, bewerken, verwijderen', () => {
+    expect(container.querySelector('[data-action="klant-new"]')).toBeTruthy();
+    expect(container.querySelector('[data-action="klant-edit"]')).toBeTruthy();
+    expect(container.querySelector('[data-action="klant-delete"]')).toBeTruthy();
+  });
+
+  it('klant-edit en klant-delete zijn initieel disabled', () => {
+    expect(container.querySelector('[data-action="klant-edit"]').disabled).toBe(true);
+    expect(container.querySelector('[data-action="klant-delete"]').disabled).toBe(true);
+  });
+
+  it('voorziening-acties zijn allemaal disabled (fase 4)', () => {
+    expect(container.querySelector('[data-action="voorziening-new"]').disabled).toBe(true);
+    expect(container.querySelector('[data-action="voorziening-edit"]').disabled).toBe(true);
+    expect(container.querySelector('[data-action="voorziening-delete"]').disabled).toBe(true);
+  });
+});
