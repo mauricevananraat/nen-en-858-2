@@ -139,6 +139,9 @@ export function importDb(currentDb, json, mode) {
   if (imported.versie !== CURRENT_VERSION) {
     throw new Error(`importDb: versie-mismatch (verwacht ${CURRENT_VERSION}, kreeg ${imported.versie})`);
   }
+  if (!Array.isArray(imported.klanten) || !Array.isArray(imported.voorzieningen)) {
+    throw new Error('importDb: bestand mist klanten- of voorzieningen-array');
+  }
   if (mode === 'vervang') {
     return {
       versie: CURRENT_VERSION,
@@ -150,12 +153,12 @@ export function importDb(currentDb, json, mode) {
   const existingKlantIds = new Set(currentDb.klanten.map(k => k.id));
   const mergedKlanten = [
     ...currentDb.klanten,
-    ...(imported.klanten || []).filter(k => !existingKlantIds.has(k.id))
+    ...imported.klanten.filter(k => !existingKlantIds.has(k.id))
   ];
   const existingVoorzieningIds = new Set(currentDb.voorzieningen.map(v => v.id));
   const mergedVoorzieningen = [
     ...currentDb.voorzieningen,
-    ...(imported.voorzieningen || []).filter(v => !existingVoorzieningIds.has(v.id))
+    ...imported.voorzieningen.filter(v => !existingVoorzieningIds.has(v.id))
   ];
   return {
     versie: CURRENT_VERSION,

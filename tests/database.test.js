@@ -404,19 +404,62 @@ describe('importDb — error handling', () => {
     const imported = JSON.stringify(current);
     expect(() => importDb(current, imported, 'fantasie')).toThrow(/mode/i);
   });
+
+  it('throws bij ontbrekende klanten-array', () => {
+    const current = { versie: 1, klanten: [], voorzieningen: [] };
+    const imported = JSON.stringify({ versie: 1, voorzieningen: [] });
+    expect(() => importDb(current, imported, 'vervang')).toThrow(/klanten/i);
+  });
+
+  it('throws bij klanten als string ipv array', () => {
+    const current = { versie: 1, klanten: [], voorzieningen: [] };
+    const imported = JSON.stringify({ versie: 1, klanten: 'fout', voorzieningen: [] });
+    expect(() => importDb(current, imported, 'vervang')).toThrow(/klanten/i);
+  });
+
+  it('throws bij ontbrekende voorzieningen-array', () => {
+    const current = { versie: 1, klanten: [], voorzieningen: [] };
+    const imported = JSON.stringify({ versie: 1, klanten: [] });
+    expect(() => importDb(current, imported, 'vervang')).toThrow(/voorzieningen/i);
+  });
 });
 
 describe('saveDb — quota handling', () => {
-  it('throws een herkenbare QuotaError bij localStorage QuotaExceededError', () => {
+  it('throws een Nederlandse Error (geen DOMException) bij QuotaExceededError', () => {
     const db = { versie: 1, klanten: [], voorzieningen: [] };
-    // Mock localStorage.setItem om QuotaExceededError te gooien
     const original = Storage.prototype.setItem;
     Storage.prototype.setItem = () => {
       const err = new DOMException('Quota exceeded', 'QuotaExceededError');
       throw err;
     };
     try {
-      expect(() => saveDb(db)).toThrow(/quota|database is vol/i);
+      let caught;
+      try {
+        saveDb(db);
+      } catch (e) {
+        caught = e;
+      }
+      expect(caught).toBeInstanceOf(Error);
+      expect(caught).not.toBeInstanceOf(DOMException);
+      expect(caught.message).toMatch(/Database is vol/);
+    } finally {
+      Storage.prototype.setItem = original;
+    }
+  });
+
+  it('laat non-quota errors ongewijzigd doorgaan', () => {
+    const db = { versie: 1, klanten: [], voorzieningen: [] };
+    const original = Storage.prototype.setItem;
+    const customError = new Error('SecurityError: cookies disabled');
+    Storage.prototype.setItem = () => { throw customError; };
+    try {
+      let caught;
+      try {
+        saveDb(db);
+      } catch (e) {
+        caught = e;
+      }
+      expect(caught).toBe(customError);
     } finally {
       Storage.prototype.setItem = original;
     }
