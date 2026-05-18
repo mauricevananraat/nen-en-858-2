@@ -198,6 +198,8 @@ export function bindVoorzieningDropdown(container, state, syncDom) {
       return;
     }
     refreshVoorzieningDropdown(container, voorziening.klant_id);
+    resetInstallatieState(state);
+    if (syncDom) syncDom();
     editBtn.disabled = true;
     deleteBtn.disabled = true;
   });

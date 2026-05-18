@@ -504,7 +504,65 @@ describe('bindKlantDropdown — onKlantChange callback', () => {
   });
 });
 
-import { resetInstallatieState } from '../js/dropdown-binding.js';
+import { resetInstallatieState, _resetVoorzieningBindGuard } from '../js/dropdown-binding.js';
+
+describe('bindVoorzieningDropdown — delete reset installatie state', () => {
+  it('reset state.installatie wanneer de geselecteerde voorziening wordt verwijderd', () => {
+    const klantId = 'k-test';
+    const voorzId = 'v-test';
+    saveDb({
+      versie: 1,
+      klanten: [{ id: klantId, bedrijfsnaam: 'Test BV' }],
+      voorzieningen: [{
+        id: voorzId,
+        klant_id: klantId,
+        naam: 'Test installatie',
+        merk: 'TestMerk',
+        ns_klasse: 'I',
+        capaciteit_l: 1000
+      }]
+    });
+
+    const state = createState();
+    state.installatie.merk = 'TestMerk';
+    state.installatie.ns_klasse = 'I';
+    state.installatie.capaciteit_l = 1000;
+
+    const container = document.createElement('div');
+    container.innerHTML = `
+      <select data-picker="klant"><option value="${klantId}">Test BV</option></select>
+      <button data-action="klant-edit" disabled></button>
+      <button data-action="klant-delete" disabled></button>
+      <select data-picker="voorziening"><option value="${voorzId}">Test installatie</option></select>
+      <button data-action="voorziening-edit" disabled></button>
+      <button data-action="voorziening-delete" disabled></button>
+    `;
+    document.body.appendChild(container);
+
+    const klantSelect = container.querySelector('[data-picker="klant"]');
+    klantSelect.value = klantId;
+    const voorzSelect = container.querySelector('[data-picker="voorziening"]');
+    voorzSelect.value = voorzId;
+    container.querySelector('[data-action="voorziening-delete"]').disabled = false;
+
+    let syncCalled = false;
+    bindVoorzieningDropdown(container, state, () => { syncCalled = true; });
+
+    const origConfirm = window.confirm;
+    window.confirm = () => true;
+
+    try {
+      container.querySelector('[data-action="voorziening-delete"]').click();
+      expect(state.installatie.merk).toBe('');
+      expect(state.installatie.ns_klasse).toBe('');
+      expect(state.installatie.capaciteit_l).toBe('');
+      expect(syncCalled).toBe(true);
+    } finally {
+      window.confirm = origConfirm;
+      document.body.removeChild(container);
+    }
+  });
+});
 
 describe('resetInstallatieState', () => {
   it('zet alle 12 installatie-velden terug naar lege string', () => {
