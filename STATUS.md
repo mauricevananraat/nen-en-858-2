@@ -29,8 +29,20 @@ Resultaat:
 - Cascade-delete bij verwijderen klant (voorzieningen mee)
 - Export/import JSON met `vervang` en `samenvoegen` modes
 - User-friendly error bij quota-overschrijding
-- 40 nieuwe unit tests in `tests/database.test.js` — totaal 174 groen
+- 44 unit tests in `tests/database.test.js` — totaal 178 groen
+
+## Fase 3 — UI Klantenbeheer ✓ Afgerond op 2026-05-18
+
+Resultaat:
+- Sectie 1 uitgebreid met entity-picker: klant-dropdown + voorziening-dropdown (placeholder) met +/✎/🗑 knoppen
+- Nieuwe module `js/modal.js` — generieke open/close + backdrop + Esc-key
+- Nieuwe module `js/klant-modal.js` — toevoegen + bewerken met "zelfde als locatie"-toggle
+- Nieuwe module `js/dropdown-binding.js` — pure helpers (`applyKlantToState`, `isLocatieFilled`) + DOM event-binding
+- "Overschrijf?"-bevestiging bij al-ingevulde locatie-velden
+- Cascade-warning bij delete van klant met voorzieningen
+- CSS: entity-picker blok + modal + checkbox-label styling (responsive)
+- 36 nieuwe tests (6 entity-picker + 6 modal + 10 klant-modal + 8 helpers + 6 DOM-binding) — totaal **214 groen**
 
 ## Volgende fase
 
-Fase 3 — UI Klantenbeheer (dropdown + modal in sectie 1). Zie spec sectie 6.
+Fase 4 — UI Voorzieningenbeheer (dropdown gefilterd op klant + modal voor toevoegen). Zie spec sectie 6.
