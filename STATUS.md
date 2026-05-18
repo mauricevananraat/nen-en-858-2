@@ -43,6 +43,20 @@ Resultaat:
 - CSS: entity-picker blok + modal + checkbox-label styling (responsive)
 - 36 nieuwe tests (6 entity-picker + 6 modal + 10 klant-modal + 8 helpers + 6 DOM-binding) — totaal **214 groen**
 
+## Fase 4 — UI Voorzieningenbeheer ✓ Afgerond op 2026-05-18
+
+Resultaat:
+- Nieuwe module `js/voorziening-modal.js` — singleton modal met 12 installatie-velden + klant-badge (read-only context)
+- Uitbreiding `js/dropdown-binding.js`:
+  - `applyVoorzieningToState` pure helper
+  - `refreshVoorzieningDropdown(container, klantId)` met filter
+  - `bindVoorzieningDropdown` event-handlers + delete
+  - `bindKlantDropdown` 4e parameter `onKlantChange` callback (backward-compatible)
+- `main.js` wire: klant-wijziging ververst voorziening-dropdown automatisch via `onKlantChange`
+- Voorziening-knoppen (+ / ✎ / 🗑) volledig functioneel
+- CSS: `.klant-badge` en `.radio-row` voor NS-klasse en Type lozing radios
+- 24 nieuwe tests (8 modal-new + 3 modal-edit + 3 applyVoorzieningToState + 4 refresh + 3 bindVoorziening + 3 onKlantChange) — totaal **238 groen**
+
 ## Volgende fase
 
-Fase 4 — UI Voorzieningenbeheer (dropdown gefilterd op klant + modal voor toevoegen). Zie spec sectie 6.
+Fase 5 — Sync (export/import database) + foutafhandeling. Zie spec sectie 7 + 8.
