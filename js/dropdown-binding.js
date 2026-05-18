@@ -1,4 +1,5 @@
 import { setField } from './state.js';
+import { loadDb, saveDb, deleteKlant, getVoorzieningenVoor } from './database.js';
 
 const KLANT_VELDEN = ['bedrijfsnaam', 'adres', 'postcode_plaats', 'contactpersoon'];
 
@@ -19,8 +20,6 @@ export function applyKlantToState(klant, state) {
   }
 }
 
-import { loadDb, saveDb, deleteKlant, getVoorzieningenVoor } from './database.js';
-
 export function refreshKlantDropdown(container) {
   const select = container.querySelector('[data-picker="klant"]');
   if (!select) return;
@@ -38,15 +37,24 @@ export function refreshKlantDropdown(container) {
   }
 }
 
+// bindKlantDropdown is niet idempotent — een tweede aanroep dupliceert listeners.
+// Guard via dataset-marker zodat onbedoeld dubbel binden faalt-safe is.
 export function bindKlantDropdown(container, state, syncDom) {
+  if (container.dataset.klantDropdownBound === '1') return;
+  container.dataset.klantDropdownBound = '1';
+
   refreshKlantDropdown(container);
   const select = container.querySelector('[data-picker="klant"]');
   const editBtn = container.querySelector('[data-action="klant-edit"]');
   const deleteBtn = container.querySelector('[data-action="klant-delete"]');
 
+  // Tracker voor vorige selectie zodat cancel-flow daar naar terug kan keren.
+  let previousValue = '';
+
   select.addEventListener('change', () => {
     const klantId = select.value;
     if (!klantId) {
+      previousValue = '';
       editBtn.disabled = true;
       deleteBtn.disabled = true;
       return;
@@ -57,14 +65,16 @@ export function bindKlantDropdown(container, state, syncDom) {
     if (isLocatieFilled(state)) {
       const ok = confirm(`Velden zijn al ingevuld. Overschrijven met data van "${klant.bedrijfsnaam}"?`);
       if (!ok) {
-        select.value = '';
-        editBtn.disabled = true;
-        deleteBtn.disabled = true;
+        // Terug naar vorige selectie ipv leegmaken — anders raakt state ↔ UI uit sync.
+        select.value = previousValue;
+        editBtn.disabled = !previousValue;
+        deleteBtn.disabled = !previousValue;
         return;
       }
     }
     applyKlantToState(klant, state);
     if (syncDom) syncDom();
+    previousValue = klantId;
     editBtn.disabled = false;
     deleteBtn.disabled = false;
   });
@@ -89,12 +99,13 @@ export function bindKlantDropdown(container, state, syncDom) {
     }
     refreshKlantDropdown(container);
     select.value = '';
+    previousValue = '';
     editBtn.disabled = true;
     deleteBtn.disabled = true;
   });
 }
 
-// Test helper — alleen voor unit tests
-export function _resetGlobalEscListener() {
-  // placeholder — momenteel geen globale listeners om te resetten
+// Test helper — reset idempotency-guard tussen tests
+export function _resetBindGuard(container) {
+  delete container.dataset.klantDropdownBound;
 }

@@ -17,7 +17,7 @@ import { initPhotoSlots } from './photos.js';
 import { populateTestData, isTestMode } from './test-data.js';
 import { getField } from './state.js';
 import { initKlantModal, openKlantModalNew, openKlantModalEdit } from './klant-modal.js';
-import { bindKlantDropdown, refreshKlantDropdown } from './dropdown-binding.js';
+import { bindKlantDropdown, refreshKlantDropdown, applyKlantToState } from './dropdown-binding.js';
 import { loadDb } from './database.js';
 
 const state = createState();
@@ -88,8 +88,17 @@ initPhotoSlots(sectiesContainer, state);
 // --- Fase 3: Klanten-UI ---
 
 initKlantModal((newDb) => {
-  // Na opslaan in modal: dropdown verversen
+  // Na opslaan in modal: dropdown verversen + als de huidige selectie de bewerkte
+  // klant is, state opnieuw vullen zodat het formulier de nieuwe waardes toont.
   refreshKlantDropdown(sectiesContainer);
+  const selectedId = sectiesContainer.querySelector('[data-picker="klant"]').value;
+  if (selectedId) {
+    const klant = newDb.klanten.find(k => k.id === selectedId);
+    if (klant) {
+      applyKlantToState(klant, state);
+      syncDomFromState();
+    }
+  }
 });
 
 bindKlantDropdown(sectiesContainer, state, syncDomFromState);

@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { applyKlantToState, isLocatieFilled, refreshKlantDropdown, bindKlantDropdown, _resetGlobalEscListener } from '../js/dropdown-binding.js';
+import { applyKlantToState, isLocatieFilled, refreshKlantDropdown, bindKlantDropdown, _resetBindGuard } from '../js/dropdown-binding.js';
 import { createState } from '../js/state.js';
 import { saveDb } from '../js/database.js';
+import { _resetForTests as _resetModalEsc } from '../js/modal.js';
 
 describe('isLocatieFilled', () => {
   it('false bij lege state', () => {
@@ -151,7 +152,7 @@ describe('refreshKlantDropdown', () => {
 describe('bindKlantDropdown — keuze-flow', () => {
   beforeEach(() => {
     localStorage.clear();
-    _resetGlobalEscListener();
+    _resetModalEsc();
   });
 
   it('bij keuze: edit + delete worden enabled', () => {
