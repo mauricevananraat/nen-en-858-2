@@ -424,6 +424,18 @@ describe('importDb — error handling', () => {
   });
 });
 
+describe('importDb — concept-detectie (C1)', () => {
+  it('geeft duidelijke foutmelding bij concept-JSON (heeft meta, geen klanten-array)', () => {
+    const conceptJson = JSON.stringify({
+      meta: { versie: '2.0', projectnummer: '24-001' },
+      klant: { bedrijfsnaam: 'X BV' },
+      installatie: {}
+    });
+    expect(() => importDb({ versie: 1, klanten: [], voorzieningen: [] }, conceptJson, 'vervang'))
+      .toThrow(/concept/i);
+  });
+});
+
 describe('saveDb — quota handling', () => {
   it('throws een Nederlandse Error (geen DOMException) bij QuotaExceededError', () => {
     const db = { versie: 1, klanten: [], voorzieningen: [] };

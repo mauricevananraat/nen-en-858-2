@@ -136,6 +136,14 @@ export function importDb(currentDb, json, mode) {
   } catch (e) {
     throw new Error('importDb: bestand bevat geen geldige JSON');
   }
+  // C1: detecteer concept-bestand (heeft meta + geen klanten-array op root)
+  if (!imported.versie && imported.meta && !Array.isArray(imported.klanten)) {
+    throw new Error(
+      'Dit bestand is een concept (inspectie-JSON), geen database-export. ' +
+      'Gebruik "Concept laden" om dit bestand te openen.'
+    );
+  }
+
   if (imported.versie !== CURRENT_VERSION) {
     throw new Error(`importDb: versie-mismatch (verwacht ${CURRENT_VERSION}, kreeg ${imported.versie})`);
   }

@@ -58,6 +58,17 @@ describe('importJson error handling', () => {
   });
 });
 
+describe('importJson — error handling (I3)', () => {
+  it('throwt Error met context bij ongeldige JSON', () => {
+    expect(() => importJson('{niet geldig')).toThrow(/Concept-bestand bevat ongeldige JSON/);
+  });
+
+  it('parseert geldige concept-JSON correct', () => {
+    const state = importJson('{"meta":{"projectnummer":"24-001"}}');
+    expect(state.meta.projectnummer).toBe('24-001');
+  });
+});
+
 describe('createState fase 2 — bal afgevoerd gewicht', () => {
   it('bal heeft afgevoerd_gewicht_kg veld', () => {
     const s = createState();

@@ -198,11 +198,43 @@ document.getElementById('btn-load').addEventListener('click', () => {
     try {
       const text = await file.text();
       const loaded = importJson(text);
-      Object.assign(state, loaded);
-      location.reload();
+
+      // C3: detecteer database-bestand (heeft klanten-array + versie, geen meta)
+      if (Array.isArray(loaded.klanten) && !loaded.meta) {
+        alert(
+          'Dit lijkt een database-exportbestand. Gebruik "Importeer database" ' +
+          'om klant- en voorzieningengegevens te importeren.'
+        );
+        return;
+      }
+
+      // C2 + I4: deep-merge zodat ontbrekende keys defaults krijgen
+      const fresh = createState();
+      const merged = {
+        ...fresh,
+        ...loaded,
+        meta: { ...fresh.meta, ...(loaded.meta || {}) },
+        klant: { ...fresh.klant, ...(loaded.klant || {}) },
+        installatie: { ...fresh.installatie, ...(loaded.installatie || {}) },
+        metingen: { ...fresh.metingen, ...(loaded.metingen || {}) },
+        functietesten: { ...fresh.functietesten, ...(loaded.functietesten || {}) },
+        controleput: { ...fresh.controleput, ...(loaded.controleput || {}) },
+        lediging: { ...fresh.lediging, ...(loaded.lediging || {}) },
+        bal: { ...fresh.bal, ...(loaded.bal || {}) },
+        inwendig: { ...fresh.inwendig, ...(loaded.inwendig || {}) },
+        lekdichtheid: { ...fresh.lekdichtheid, ...(loaded.lekdichtheid || {}) },
+        coating: { ...fresh.coating, ...(loaded.coating || {}) },
+        conclusie: { ...fresh.conclusie, ...(loaded.conclusie || {}) },
+        fotos: { ...fresh.fotos, ...(loaded.fotos || {}) },
+        checklist_obas: loaded.checklist_obas || fresh.checklist_obas
+      };
+      Object.assign(state, merged);
+
+      // C2: synchroniseer DOM met geladen state, geen reload nodig
+      syncDomFromState();
     } catch (err) {
       console.error('importJson failed:', err);
-      alert('Bestand kon niet geladen worden: ongeldige JSON-structuur of leesfout.');
+      alert('Bestand kon niet geladen worden: ' + err.message);
     }
   };
   input.click();

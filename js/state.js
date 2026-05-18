@@ -124,5 +124,9 @@ export function exportJson(state) {
 }
 
 export function importJson(json) {
-  return JSON.parse(json);
+  try {
+    return JSON.parse(json);
+  } catch (e) {
+    throw new Error('Concept-bestand bevat ongeldige JSON: ' + e.message);
+  }
 }
