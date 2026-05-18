@@ -57,6 +57,19 @@ Resultaat:
 - CSS: `.klant-badge` en `.radio-row` voor NS-klasse en Type lozing radios
 - 24 nieuwe tests (8 modal-new + 3 modal-edit + 3 applyVoorzieningToState + 4 refresh + 3 bindVoorziening + 3 onKlantChange) — totaal **238 groen**
 
+## Fase 5 — Sync UI ✓ Afgerond op 2026-05-18
+
+Resultaat:
+- Nieuwe module `js/sync-ui.js` met 3 exports:
+  - `exportToFile()` — leest db, returnt {json, filename}
+  - `importFromText(jsonText, mode)` — parse + importeert, returnt {success, error?}
+  - `bindSyncButtons()` — koppelt #btn-export-db en #btn-import-db aan UI flow
+- HTML: 2 nieuwe knoppen in action-bar ("Exporteer database", "Importeer database")
+- Mode-keuze via confirm() dialog (MVP)
+- Foutmeldingen: corrupte JSON, versie-mismatch, quota-error → user-friendly alerts
+- Robuustheid: idempotency-guard na null-check, anchor in DOM voor download, import-lock tegen dubbel-klik
+- 11 nieuwe tests in `tests/sync-ui.test.js` (10 actief + 1 skipped) — totaal 249 groen + 1 skipped
+
 ## Volgende fase
 
-Fase 5 — Sync (export/import database) + foutafhandeling. Zie spec sectie 7 + 8.
+Fase 6 — Hosting op GitHub Pages + mobiele test op telefoon.

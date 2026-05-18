@@ -20,6 +20,7 @@ import { initKlantModal, openKlantModalNew, openKlantModalEdit } from './klant-m
 import { initVoorzieningModal, openVoorzieningModalNew, openVoorzieningModalEdit } from './voorziening-modal.js';
 import { bindKlantDropdown, refreshKlantDropdown, applyKlantToState, bindVoorzieningDropdown, refreshVoorzieningDropdown, applyVoorzieningToState, resetInstallatieState } from './dropdown-binding.js';
 import { loadDb } from './database.js';
+import { bindSyncButtons } from './sync-ui.js';
 
 const state = createState();
 if (isTestMode()) {
@@ -235,5 +236,8 @@ document.getElementById('btn-pdf').addEventListener('click', () => {
   const naam = `inspectie-${state.meta.projectnummer || 'rapport'}-${state.meta.rapportagedatum}.pdf`;
   pdfMake.createPdf(dd).download(naam);
 });
+
+// --- Fase 5: Sync UI (export/import database) ---
+bindSyncButtons();
 
 console.log('[NEN-EN-858-2] Formulier geladen.', state);
