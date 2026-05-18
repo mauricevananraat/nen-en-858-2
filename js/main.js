@@ -16,6 +16,9 @@ import {
 import { initPhotoSlots } from './photos.js';
 import { populateTestData, isTestMode } from './test-data.js';
 import { getField } from './state.js';
+import { initKlantModal, openKlantModalNew, openKlantModalEdit } from './klant-modal.js';
+import { bindKlantDropdown, refreshKlantDropdown } from './dropdown-binding.js';
+import { loadDb } from './database.js';
 
 const state = createState();
 if (isTestMode()) {
@@ -81,6 +84,31 @@ renderSection6Conclusie(sectiesContainer, state);
 bindIntervalSwitch(document.body, state);
 
 initPhotoSlots(sectiesContainer, state);
+
+// --- Fase 3: Klanten-UI ---
+
+initKlantModal((newDb) => {
+  // Na opslaan in modal: dropdown verversen
+  refreshKlantDropdown(sectiesContainer);
+});
+
+bindKlantDropdown(sectiesContainer, state, syncDomFromState);
+
+// Wire "+ Nieuw klant" en "✎ Bewerken" knoppen
+const klantNewBtn = sectiesContainer.querySelector('[data-action="klant-new"]');
+if (klantNewBtn) {
+  klantNewBtn.addEventListener('click', () => openKlantModalNew());
+}
+const klantEditBtn = sectiesContainer.querySelector('[data-action="klant-edit"]');
+if (klantEditBtn) {
+  klantEditBtn.addEventListener('click', () => {
+    const klantId = sectiesContainer.querySelector('[data-picker="klant"]').value;
+    if (!klantId) return;
+    const db = loadDb();
+    const klant = db.klanten.find(k => k.id === klantId);
+    if (klant) openKlantModalEdit(klant);
+  });
+}
 
 // --- Save / Load JSON ---
 
