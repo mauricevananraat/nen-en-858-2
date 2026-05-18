@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { initVoorzieningModal, openVoorzieningModalNew, _resetForTests } from '../js/voorziening-modal.js';
+import { initVoorzieningModal, openVoorzieningModalNew, openVoorzieningModalEdit, _resetForTests } from '../js/voorziening-modal.js';
 import { saveDb } from '../js/database.js';
 
 describe('voorziening-modal — init + open new', () => {
@@ -102,5 +102,55 @@ describe('voorziening-modal — init + open new', () => {
     expect(document.querySelector('[name="type_lozing"][value="Vrij verval riool"]')).toBeTruthy();
     expect(document.querySelector('[name="type_lozing"][value="Oppervlaktewater"]')).toBeTruthy();
     expect(document.querySelector('[name="type_lozing"][value="Anders"]')).toBeTruthy();
+  });
+});
+
+describe('voorziening-modal — open edit', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '';
+    localStorage.clear();
+    _resetForTests();
+    saveDb({
+      versie: 1,
+      klanten: [{ id: 'uniper', bedrijfsnaam: 'Uniper Leiden' }],
+      voorzieningen: []
+    });
+  });
+
+  it('openVoorzieningModalEdit titel = "Voorziening bewerken"', () => {
+    initVoorzieningModal();
+    openVoorzieningModalEdit({
+      id: 'v1', klant_id: 'uniper', naam: 'UNIP0504',
+      merk: 'ACO'
+    });
+    expect(document.querySelector('.modal-title').textContent).toBe('Voorziening bewerken');
+  });
+
+  it('vult bestaande velden in inclusief radios', () => {
+    initVoorzieningModal();
+    openVoorzieningModalEdit({
+      id: 'v1', klant_id: 'uniper',
+      naam: 'UNIP0504 OOA03 trafo',
+      merk: 'ACO',
+      type_bouwjaar: 'NSF-100 / 2018',
+      ns_klasse: 'I',
+      ns_ls: '15',
+      capaciteit_l: '1000',
+      type_lozing: 'Vrij verval riool',
+      lozingsvergunning_kenmerk: 'WSL-2024-1287'
+    });
+    expect(document.querySelector('[name="naam"]').value).toBe('UNIP0504 OOA03 trafo');
+    expect(document.querySelector('[name="merk"]').value).toBe('ACO');
+    expect(document.querySelector('[name="ns_klasse"][value="I"]').checked).toBe(true);
+    expect(document.querySelector('[name="type_lozing"][value="Vrij verval riool"]').checked).toBe(true);
+    expect(document.querySelector('[name="lozingsvergunning_kenmerk"]').value).toBe('WSL-2024-1287');
+  });
+
+  it('klant-badge toont juiste klant', () => {
+    initVoorzieningModal();
+    openVoorzieningModalEdit({
+      id: 'v1', klant_id: 'uniper', naam: 'X'
+    });
+    expect(document.querySelector('.klant-badge').textContent).toContain('Uniper Leiden');
   });
 });

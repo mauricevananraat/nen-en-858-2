@@ -87,6 +87,12 @@ const MODAL_HTML = `
 </div>
 `;
 
+const VOORZIENING_FIELDS = [
+  'naam', 'merk', 'type_bouwjaar', 'ns_klasse', 'ns_ls',
+  'capaciteit_l', 'mat_afdekking', 'inhoud_slibv_l', 'mat_opbouw',
+  'inlaat_mm', 'uitlaat_mm', 'type_lozing', 'lozingsvergunning_kenmerk'
+];
+
 let modalEl = null;
 let editingVoorzieningId = null;
 let currentKlantId = null;
@@ -129,6 +135,28 @@ export function openVoorzieningModalNew(klantId) {
   form.reset();
   setRadios(form);
   fillKlantBadge(klantId);
+  openModal(modalEl);
+}
+
+export function openVoorzieningModalEdit(voorziening) {
+  if (!modalEl) throw new Error('initVoorzieningModal must be called first');
+  editingVoorzieningId = voorziening.id;
+  currentKlantId = voorziening.klant_id;
+  getEl('.modal-title').textContent = 'Voorziening bewerken';
+  const form = getEl('#voorziening-form');
+  form.reset();
+  setRadios(form);
+  VOORZIENING_FIELDS.forEach(f => {
+    const input = form.querySelector(`[name="${f}"]`);
+    if (!input) return;
+    if (input.type === 'radio') {
+      const target = form.querySelector(`[name="${f}"][value="${voorziening[f] || ''}"]`);
+      if (target) target.checked = true;
+    } else {
+      input.value = voorziening[f] || '';
+    }
+  });
+  fillKlantBadge(voorziening.klant_id);
   openModal(modalEl);
 }
 
