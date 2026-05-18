@@ -62,32 +62,39 @@ function renderSlot(slot, state, key, max, label) {
         </div>
       `).join('')}
       ${photos.length < max ? `
-        <label class="photo-add">
-          +
-          <input type="file" accept="image/*" capture="environment" multiple style="display:none">
+        <label class="photo-add photo-add-camera" title="Foto maken met camera">
+          📷
+          <input type="file" accept="image/*" capture="environment" style="display:none">
+        </label>
+        <label class="photo-add photo-add-upload" title="Foto's uploaden uit galerij/bestanden">
+          🖼️
+          <input type="file" accept="image/*" multiple style="display:none">
         </label>
       ` : ''}
     </div>
   `;
 
-  const fileInput = slot.querySelector('input[type="file"]');
-  if (fileInput) {
-    fileInput.addEventListener('change', async (e) => {
-      const files = Array.from(e.target.files);
-      const remaining = max - photos.length;
-      for (const file of files.slice(0, remaining)) {
-        const reader = new FileReader();
-        const dataUrl = await new Promise(res => {
-          reader.onload = () => res(reader.result);
-          reader.readAsDataURL(file);
-        });
-        const compressed = await compressDataUrl(dataUrl);
-        photos.push({ dataurl: compressed, bijschrift: '' });
-      }
-      setField(state, `fotos.${key}`, photos);
-      renderSlot(slot, state, key, max, label);
-    });
-  }
+  // capture-attribuut + multiple samen werken niet op iOS Safari (file-picker negeert capture).
+  // Daarom twee aparte inputs: camera (capture, geen multiple) + upload (multiple, geen capture).
+  // Beide gebruiken dezelfde verwerking via handleFiles.
+  const handleFiles = async (files) => {
+    const remaining = max - photos.length;
+    for (const file of files.slice(0, remaining)) {
+      const reader = new FileReader();
+      const dataUrl = await new Promise(res => {
+        reader.onload = () => res(reader.result);
+        reader.readAsDataURL(file);
+      });
+      const compressed = await compressDataUrl(dataUrl);
+      photos.push({ dataurl: compressed, bijschrift: '' });
+    }
+    setField(state, `fotos.${key}`, photos);
+    renderSlot(slot, state, key, max, label);
+  };
+
+  slot.querySelectorAll('input[type="file"]').forEach(input => {
+    input.addEventListener('change', (e) => handleFiles(Array.from(e.target.files)));
+  });
 
   slot.querySelectorAll('.photo-remove').forEach(btn => {
     btn.addEventListener('click', () => {
