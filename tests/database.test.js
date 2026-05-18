@@ -405,3 +405,20 @@ describe('importDb — error handling', () => {
     expect(() => importDb(current, imported, 'fantasie')).toThrow(/mode/i);
   });
 });
+
+describe('saveDb — quota handling', () => {
+  it('throws een herkenbare QuotaError bij localStorage QuotaExceededError', () => {
+    const db = { versie: 1, klanten: [], voorzieningen: [] };
+    // Mock localStorage.setItem om QuotaExceededError te gooien
+    const original = Storage.prototype.setItem;
+    Storage.prototype.setItem = () => {
+      const err = new DOMException('Quota exceeded', 'QuotaExceededError');
+      throw err;
+    };
+    try {
+      expect(() => saveDb(db)).toThrow(/quota|database is vol/i);
+    } finally {
+      Storage.prototype.setItem = original;
+    }
+  });
+});

@@ -21,7 +21,14 @@ export function loadDb() {
 }
 
 export function saveDb(db) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+  } catch (e) {
+    if (e && (e.name === 'QuotaExceededError' || e.code === 22)) {
+      throw new Error('Database is vol. Exporteer als backup en verwijder oude klanten.');
+    }
+    throw e;
+  }
 }
 
 export function slugify(text) {
