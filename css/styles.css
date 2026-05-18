@@ -445,3 +445,42 @@ textarea.field-input { resize: vertical; min-height: 60px; font-family: inherit;
     border-radius: 0;
   }
 }
+
+/* Voorziening-modal: klant-badge + radio-row */
+.klant-badge {
+  background: var(--blue-bg);
+  color: var(--blue);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 16px;
+  border-left: 3px solid var(--blue);
+}
+.radio-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.radio-row .radio-opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.radio-row .radio-opt input {
+  display: none;
+}
+.radio-row .radio-opt span {
+  padding: 6px 12px;
+  border: 1px solid var(--grey-mid);
+  border-radius: 4px;
+  background: white;
+  transition: all 0.15s;
+}
+.radio-row .radio-opt input:checked + span {
+  background: var(--blue);
+  color: white;
+  border-color: var(--blue);
+}
