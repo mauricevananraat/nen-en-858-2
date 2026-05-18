@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { applyKlantToState, isLocatieFilled, refreshKlantDropdown, bindKlantDropdown, _resetBindGuard } from '../js/dropdown-binding.js';
+import { applyKlantToState, isLocatieFilled, refreshKlantDropdown, bindKlantDropdown, _resetBindGuard, applyVoorzieningToState } from '../js/dropdown-binding.js';
 import { createState } from '../js/state.js';
 import { saveDb } from '../js/database.js';
 import { _resetForTests as _resetModalEsc } from '../js/modal.js';
@@ -236,5 +236,61 @@ describe('bindKlantDropdown — keuze-flow', () => {
     } finally {
       window.confirm = origConfirm;
     }
+  });
+});
+
+describe('applyVoorzieningToState', () => {
+  it('kopieert alle 12 installatie-velden naar state.installatie', () => {
+    const s = createState();
+    const voorziening = {
+      id: 'unip0504',
+      klant_id: 'uniper',
+      naam: 'UNIP0504 OOA03 trafo',
+      merk: 'ACO',
+      type_bouwjaar: 'NSF-100 / 2018',
+      ns_klasse: 'I',
+      ns_ls: '15',
+      capaciteit_l: '1000',
+      mat_afdekking: 'Beton',
+      inhoud_slibv_l: '700',
+      mat_opbouw: 'PE',
+      inlaat_mm: '160',
+      uitlaat_mm: '160',
+      type_lozing: 'Vrij verval riool',
+      lozingsvergunning_kenmerk: 'WSL-2024-1287'
+    };
+    applyVoorzieningToState(voorziening, s);
+    expect(s.installatie.merk).toBe('ACO');
+    expect(s.installatie.type_bouwjaar).toBe('NSF-100 / 2018');
+    expect(s.installatie.ns_klasse).toBe('I');
+    expect(s.installatie.ns_ls).toBe('15');
+    expect(s.installatie.capaciteit_l).toBe('1000');
+    expect(s.installatie.mat_afdekking).toBe('Beton');
+    expect(s.installatie.inhoud_slibv_l).toBe('700');
+    expect(s.installatie.mat_opbouw).toBe('PE');
+    expect(s.installatie.inlaat_mm).toBe('160');
+    expect(s.installatie.uitlaat_mm).toBe('160');
+    expect(s.installatie.type_lozing).toBe('Vrij verval riool');
+    expect(s.installatie.lozingsvergunning_kenmerk).toBe('WSL-2024-1287');
+  });
+
+  it('zet meta-velden (id, klant_id, naam, aangemaakt) NIET op state', () => {
+    const s = createState();
+    const voorziening = {
+      id: 'v1', klant_id: 'k1', naam: 'V', aangemaakt: '2026-05-18',
+      merk: 'X'
+    };
+    applyVoorzieningToState(voorziening, s);
+    expect(s.installatie).not.toHaveProperty('id');
+    expect(s.installatie).not.toHaveProperty('klant_id');
+    expect(s.installatie).not.toHaveProperty('naam');
+    expect(s.installatie).not.toHaveProperty('aangemaakt');
+  });
+
+  it('lege voorziening-velden worden lege strings op state', () => {
+    const s = createState();
+    s.installatie.merk = 'oudewaarde';
+    applyVoorzieningToState({ id: 'v1', klant_id: 'k1', naam: 'V' }, s);
+    expect(s.installatie.merk).toBe('');
   });
 });

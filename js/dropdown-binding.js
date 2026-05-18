@@ -20,6 +20,17 @@ export function applyKlantToState(klant, state) {
   }
 }
 
+const INSTALLATIE_VELDEN = [
+  'merk', 'type_bouwjaar', 'ns_klasse', 'ns_ls',
+  'capaciteit_l', 'mat_afdekking', 'inhoud_slibv_l', 'mat_opbouw',
+  'inlaat_mm', 'uitlaat_mm',
+  'type_lozing', 'lozingsvergunning_kenmerk'
+];
+
+export function applyVoorzieningToState(voorziening, state) {
+  INSTALLATIE_VELDEN.forEach(f => setField(state, `installatie.${f}`, voorziening[f] || ''));
+}
+
 export function refreshKlantDropdown(container) {
   const select = container.querySelector('[data-picker="klant"]');
   if (!select) return;
