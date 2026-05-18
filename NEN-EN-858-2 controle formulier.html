@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEN-EN-858-2 Controle Formulier — Symitech</title>
+<script src="assets/pdfmake.min.js"></script>
+<script src="assets/vfs_fonts.js"></script>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header class="form-header">
+  <div class="brand">
+    <img src="symitech_logo.png" alt="Symitech" class="logo">
+    <div>
+      <div class="brand-sub">Symitech B.V. · NEN-EN 858-2:2003</div>
+      <h1>Controle Formulier OBAS</h1>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <section class="interval-picker">
+    <label class="pill" data-interval="halfjaarlijks">
+      <input type="radio" name="interval" value="halfjaarlijks" checked>
+      <span>Halfjaarlijks</span>
+    </label>
+    <label class="pill" data-interval="jaarlijks">
+      <input type="radio" name="interval" value="jaarlijks">
+      <span>Jaarlijks</span>
+    </label>
+    <label class="pill" data-interval="5jaarlijks">
+      <input type="radio" name="interval" value="5jaarlijks">
+      <span>5-jaarlijks</span>
+    </label>
+  </section>
+
+  <div id="form-secties"><!-- secties worden geinjecteerd door form-render.js --></div>
+
+  <div class="action-bar">
+    <button id="btn-testdata" class="btn btn-test" title="Vul formulier met testdata + foto's voor visuele review">🧪 Testdata</button>
+    <button id="btn-load" class="btn btn-secondary">📂 Concept laden</button>
+    <button id="btn-save" class="btn btn-secondary">💾 Concept opslaan</button>
+    <button id="btn-pdf" class="btn btn-primary">📄 Genereer PDF rapport</button>
+  </div>
+</main>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

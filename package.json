@@ -1,0 +1,14 @@
+{
+  "name": "nen-en-858-2-controle-formulier-v2",
+  "version": "0.2.0",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^1.6.0",
+    "jsdom": "^24.0.0",
+    "@vitest/ui": "^1.6.0"
+  }
+}
