@@ -37,3 +37,40 @@ export function uniqueSlug(base, existingIds) {
   while (existingIds.includes(`${base}-${n}`)) n++;
   return `${base}-${n}`;
 }
+
+function today() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+export function addKlant(db, klant) {
+  const existingIds = db.klanten.map(k => k.id);
+  const baseSlug = slugify(klant.bedrijfsnaam || 'klant');
+  const id = uniqueSlug(baseSlug, existingIds);
+  return {
+    ...db,
+    klanten: [
+      ...db.klanten,
+      { ...klant, id, aangemaakt: today() }
+    ]
+  };
+}
+
+export function updateKlant(db, id, patch) {
+  const idx = db.klanten.findIndex(k => k.id === id);
+  if (idx === -1) {
+    throw new Error(`updateKlant: id "${id}" niet gevonden`);
+  }
+  const updated = { ...db.klanten[idx], ...patch, id: db.klanten[idx].id, aangemaakt: db.klanten[idx].aangemaakt };
+  return {
+    ...db,
+    klanten: db.klanten.map((k, i) => i === idx ? updated : k)
+  };
+}
+
+export function deleteKlant(db, id) {
+  return {
+    ...db,
+    klanten: db.klanten.filter(k => k.id !== id)
+  };
+  // NOTE: cascade naar voorzieningen komt in Task 5
+}

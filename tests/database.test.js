@@ -81,3 +81,87 @@ describe('uniqueSlug', () => {
     expect(uniqueSlug('test', ['test', 'test-2'])).toBe('test-3');
   });
 });
+
+import { addKlant, updateKlant, deleteKlant } from '../js/database.js';
+
+describe('addKlant', () => {
+  it('voegt klant toe met auto-gegenereerde id (slug)', () => {
+    const db = { versie: 1, klanten: [], voorzieningen: [] };
+    const newDb = addKlant(db, {
+      bedrijfsnaam: 'Uniper Leiden',
+      adres: 'Industrieweg 1',
+      postcode_plaats: '2316 EX Leiden',
+      contactpersoon: 'J. Smit'
+    });
+    expect(newDb.klanten).toHaveLength(1);
+    expect(newDb.klanten[0].id).toBe('uniper-leiden');
+    expect(newDb.klanten[0].bedrijfsnaam).toBe('Uniper Leiden');
+  });
+
+  it('voegt aangemaakt-datum toe (ISO YYYY-MM-DD)', () => {
+    const db = { versie: 1, klanten: [], voorzieningen: [] };
+    const newDb = addKlant(db, { bedrijfsnaam: 'Test BV' });
+    expect(newDb.klanten[0].aangemaakt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it('muteert input-db niet (immutability)', () => {
+    const db = { versie: 1, klanten: [], voorzieningen: [] };
+    addKlant(db, { bedrijfsnaam: 'X' });
+    expect(db.klanten).toHaveLength(0);
+  });
+
+  it('genereert unieke id bij collision', () => {
+    const db = {
+      versie: 1,
+      klanten: [{ id: 'test-bv', bedrijfsnaam: 'Test BV' }],
+      voorzieningen: []
+    };
+    const newDb = addKlant(db, { bedrijfsnaam: 'Test BV' });
+    expect(newDb.klanten[1].id).toBe('test-bv-2');
+  });
+});
+
+describe('updateKlant', () => {
+  it('updatet velden behalve id en aangemaakt', () => {
+    const db = {
+      versie: 1,
+      klanten: [{ id: 'test', bedrijfsnaam: 'Oud', aangemaakt: '2026-01-01' }],
+      voorzieningen: []
+    };
+    const newDb = updateKlant(db, 'test', { bedrijfsnaam: 'Nieuw' });
+    expect(newDb.klanten[0].bedrijfsnaam).toBe('Nieuw');
+    expect(newDb.klanten[0].id).toBe('test');
+    expect(newDb.klanten[0].aangemaakt).toBe('2026-01-01');
+  });
+
+  it('throws als id niet bestaat', () => {
+    const db = { versie: 1, klanten: [], voorzieningen: [] };
+    expect(() => updateKlant(db, 'onbekend', { bedrijfsnaam: 'X' })).toThrow();
+  });
+});
+
+describe('deleteKlant', () => {
+  it('verwijdert klant zonder voorzieningen', () => {
+    const db = {
+      versie: 1,
+      klanten: [
+        { id: 'a', bedrijfsnaam: 'A' },
+        { id: 'b', bedrijfsnaam: 'B' }
+      ],
+      voorzieningen: []
+    };
+    const newDb = deleteKlant(db, 'a');
+    expect(newDb.klanten).toHaveLength(1);
+    expect(newDb.klanten[0].id).toBe('b');
+  });
+
+  it('is no-op bij onbekende id', () => {
+    const db = {
+      versie: 1,
+      klanten: [{ id: 'a' }],
+      voorzieningen: []
+    };
+    const newDb = deleteKlant(db, 'onbekend');
+    expect(newDb.klanten).toHaveLength(1);
+  });
+});
