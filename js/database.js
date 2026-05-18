@@ -114,3 +114,45 @@ export function deleteVoorziening(db, id) {
 export function getVoorzieningenVoor(db, klantId) {
   return db.voorzieningen.filter(v => v.klant_id === klantId);
 }
+
+export function exportDb(db) {
+  return JSON.stringify(db, null, 2);
+}
+
+export function importDb(currentDb, json, mode) {
+  if (mode !== 'vervang' && mode !== 'samenvoegen') {
+    throw new Error(`importDb: onbekende mode "${mode}" — gebruik "vervang" of "samenvoegen"`);
+  }
+  let imported;
+  try {
+    imported = JSON.parse(json);
+  } catch (e) {
+    throw new Error('importDb: bestand bevat geen geldige JSON');
+  }
+  if (imported.versie !== CURRENT_VERSION) {
+    throw new Error(`importDb: versie-mismatch (verwacht ${CURRENT_VERSION}, kreeg ${imported.versie})`);
+  }
+  if (mode === 'vervang') {
+    return {
+      versie: CURRENT_VERSION,
+      klanten: imported.klanten || [],
+      voorzieningen: imported.voorzieningen || []
+    };
+  }
+  // mode === 'samenvoegen' — bestaande items winnen bij id-collision
+  const existingKlantIds = new Set(currentDb.klanten.map(k => k.id));
+  const mergedKlanten = [
+    ...currentDb.klanten,
+    ...(imported.klanten || []).filter(k => !existingKlantIds.has(k.id))
+  ];
+  const existingVoorzieningIds = new Set(currentDb.voorzieningen.map(v => v.id));
+  const mergedVoorzieningen = [
+    ...currentDb.voorzieningen,
+    ...(imported.voorzieningen || []).filter(v => !existingVoorzieningIds.has(v.id))
+  ];
+  return {
+    versie: CURRENT_VERSION,
+    klanten: mergedKlanten,
+    voorzieningen: mergedVoorzieningen
+  };
+}

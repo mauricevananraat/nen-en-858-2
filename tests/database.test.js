@@ -307,3 +307,101 @@ describe('getVoorzieningenVoor', () => {
     expect(getVoorzieningenVoor(db, 'onbekend')).toEqual([]);
   });
 });
+
+import { exportDb, importDb } from '../js/database.js';
+
+describe('exportDb', () => {
+  it('returnt JSON-string met volledig db-object', () => {
+    const db = {
+      versie: 1,
+      klanten: [{ id: 'a', bedrijfsnaam: 'A' }],
+      voorzieningen: []
+    };
+    const json = exportDb(db);
+    expect(typeof json).toBe('string');
+    const parsed = JSON.parse(json);
+    expect(parsed).toEqual(db);
+  });
+});
+
+describe('importDb — mode "vervang"', () => {
+  it('vervangt bestaande database compleet', () => {
+    const current = {
+      versie: 1,
+      klanten: [{ id: 'oud' }],
+      voorzieningen: [{ id: 'v1', klant_id: 'oud' }]
+    };
+    const imported = JSON.stringify({
+      versie: 1,
+      klanten: [{ id: 'nieuw', bedrijfsnaam: 'Nieuw' }],
+      voorzieningen: []
+    });
+    const newDb = importDb(current, imported, 'vervang');
+    expect(newDb.klanten).toHaveLength(1);
+    expect(newDb.klanten[0].id).toBe('nieuw');
+    expect(newDb.voorzieningen).toHaveLength(0);
+  });
+});
+
+describe('importDb — mode "samenvoegen"', () => {
+  it('voegt nieuwe klanten toe, bestaande (zelfde id) blijven behouden', () => {
+    const current = {
+      versie: 1,
+      klanten: [{ id: 'a', bedrijfsnaam: 'A-bestaand' }],
+      voorzieningen: []
+    };
+    const imported = JSON.stringify({
+      versie: 1,
+      klanten: [
+        { id: 'a', bedrijfsnaam: 'A-geimporteerd' },
+        { id: 'b', bedrijfsnaam: 'B-nieuw' }
+      ],
+      voorzieningen: []
+    });
+    const newDb = importDb(current, imported, 'samenvoegen');
+    expect(newDb.klanten).toHaveLength(2);
+    const a = newDb.klanten.find(k => k.id === 'a');
+    expect(a.bedrijfsnaam).toBe('A-bestaand');
+    const b = newDb.klanten.find(k => k.id === 'b');
+    expect(b.bedrijfsnaam).toBe('B-nieuw');
+  });
+
+  it('voegt voorzieningen op dezelfde manier samen', () => {
+    const current = {
+      versie: 1,
+      klanten: [{ id: 'k' }],
+      voorzieningen: [{ id: 'v1', klant_id: 'k', naam: 'V1-bestaand' }]
+    };
+    const imported = JSON.stringify({
+      versie: 1,
+      klanten: [{ id: 'k' }],
+      voorzieningen: [
+        { id: 'v1', klant_id: 'k', naam: 'V1-geimporteerd' },
+        { id: 'v2', klant_id: 'k', naam: 'V2-nieuw' }
+      ]
+    });
+    const newDb = importDb(current, imported, 'samenvoegen');
+    expect(newDb.voorzieningen).toHaveLength(2);
+    expect(newDb.voorzieningen.find(v => v.id === 'v1').naam).toBe('V1-bestaand');
+    expect(newDb.voorzieningen.find(v => v.id === 'v2').naam).toBe('V2-nieuw');
+  });
+});
+
+describe('importDb — error handling', () => {
+  it('throws bij corrupte JSON', () => {
+    const current = { versie: 1, klanten: [], voorzieningen: [] };
+    expect(() => importDb(current, '{invalid', 'vervang')).toThrow();
+  });
+
+  it('throws bij versie-mismatch', () => {
+    const current = { versie: 1, klanten: [], voorzieningen: [] };
+    const imported = JSON.stringify({ versie: 999, klanten: [], voorzieningen: [] });
+    expect(() => importDb(current, imported, 'vervang')).toThrow(/versie/i);
+  });
+
+  it('throws bij onbekende mode', () => {
+    const current = { versie: 1, klanten: [], voorzieningen: [] };
+    const imported = JSON.stringify(current);
+    expect(() => importDb(current, imported, 'fantasie')).toThrow(/mode/i);
+  });
+});
