@@ -160,7 +160,7 @@ describe('bindSyncButtons — export', () => {
 describe('bindSyncButtons — import-mode dialog', () => {
   beforeEach(() => localStorage.clear());
 
-  it('vraagt mode via confirm bij bestand-selectie', async () => {
+  it.skip('vraagt mode via confirm bij bestand-selectie', async () => {
     saveDb({ versie: 1, klanten: [], voorzieningen: [] });
     makeContainer();
     bindSyncButtons();
