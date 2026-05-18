@@ -74,3 +74,43 @@ export function deleteKlant(db, id) {
   };
   // NOTE: cascade naar voorzieningen komt in Task 5
 }
+
+export function addVoorziening(db, voorziening) {
+  if (!db.klanten.some(k => k.id === voorziening.klant_id)) {
+    throw new Error(`addVoorziening: klant_id "${voorziening.klant_id}" niet gevonden`);
+  }
+  const existingIds = db.voorzieningen.map(v => v.id);
+  const baseSlug = slugify(voorziening.naam || 'voorziening');
+  const id = uniqueSlug(baseSlug, existingIds);
+  return {
+    ...db,
+    voorzieningen: [
+      ...db.voorzieningen,
+      { ...voorziening, id, aangemaakt: today() }
+    ]
+  };
+}
+
+export function updateVoorziening(db, id, patch) {
+  const idx = db.voorzieningen.findIndex(v => v.id === id);
+  if (idx === -1) {
+    throw new Error(`updateVoorziening: id "${id}" niet gevonden`);
+  }
+  const orig = db.voorzieningen[idx];
+  const updated = { ...orig, ...patch, id: orig.id, klant_id: orig.klant_id, aangemaakt: orig.aangemaakt };
+  return {
+    ...db,
+    voorzieningen: db.voorzieningen.map((v, i) => i === idx ? updated : v)
+  };
+}
+
+export function deleteVoorziening(db, id) {
+  return {
+    ...db,
+    voorzieningen: db.voorzieningen.filter(v => v.id !== id)
+  };
+}
+
+export function getVoorzieningenVoor(db, klantId) {
+  return db.voorzieningen.filter(v => v.klant_id === klantId);
+}

@@ -83,6 +83,7 @@ describe('uniqueSlug', () => {
 });
 
 import { addKlant, updateKlant, deleteKlant } from '../js/database.js';
+import { addVoorziening, updateVoorziening, deleteVoorziening, getVoorzieningenVoor } from '../js/database.js';
 
 describe('addKlant', () => {
   it('voegt klant toe met auto-gegenereerde id (slug)', () => {
@@ -163,5 +164,114 @@ describe('deleteKlant', () => {
     };
     const newDb = deleteKlant(db, 'onbekend');
     expect(newDb.klanten).toHaveLength(1);
+  });
+});
+
+describe('addVoorziening', () => {
+  it('voegt voorziening toe met id uit naam + aangemaakt-datum', () => {
+    const db = {
+      versie: 1,
+      klanten: [{ id: 'uniper-leiden', bedrijfsnaam: 'Uniper Leiden' }],
+      voorzieningen: []
+    };
+    const newDb = addVoorziening(db, {
+      klant_id: 'uniper-leiden',
+      naam: 'UNIP0504 OOA03 trafo',
+      merk: 'ACO'
+    });
+    expect(newDb.voorzieningen).toHaveLength(1);
+    expect(newDb.voorzieningen[0].id).toBe('unip0504-ooa03-trafo');
+    expect(newDb.voorzieningen[0].klant_id).toBe('uniper-leiden');
+    expect(newDb.voorzieningen[0].aangemaakt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it('throws als klant_id niet bestaat', () => {
+    const db = { versie: 1, klanten: [], voorzieningen: [] };
+    expect(() => addVoorziening(db, { klant_id: 'fantoom', naam: 'X' })).toThrow();
+  });
+
+  it('genereert unieke id bij naam-collision', () => {
+    const db = {
+      versie: 1,
+      klanten: [{ id: 'uniper' }],
+      voorzieningen: [{ id: 'trafo', klant_id: 'uniper', naam: 'Trafo' }]
+    };
+    const newDb = addVoorziening(db, { klant_id: 'uniper', naam: 'Trafo' });
+    expect(newDb.voorzieningen[1].id).toBe('trafo-2');
+  });
+
+  it('muteert input-db niet', () => {
+    const db = {
+      versie: 1,
+      klanten: [{ id: 'u' }],
+      voorzieningen: []
+    };
+    addVoorziening(db, { klant_id: 'u', naam: 'X' });
+    expect(db.voorzieningen).toHaveLength(0);
+  });
+});
+
+describe('updateVoorziening', () => {
+  it('updatet velden behalve id, klant_id en aangemaakt', () => {
+    const db = {
+      versie: 1,
+      klanten: [{ id: 'u' }],
+      voorzieningen: [{
+        id: 'v1',
+        klant_id: 'u',
+        naam: 'Oud',
+        merk: 'A',
+        aangemaakt: '2026-01-01'
+      }]
+    };
+    const newDb = updateVoorziening(db, 'v1', { naam: 'Nieuw', merk: 'B', klant_id: 'anders' });
+    expect(newDb.voorzieningen[0].naam).toBe('Nieuw');
+    expect(newDb.voorzieningen[0].merk).toBe('B');
+    expect(newDb.voorzieningen[0].id).toBe('v1');
+    expect(newDb.voorzieningen[0].klant_id).toBe('u');
+    expect(newDb.voorzieningen[0].aangemaakt).toBe('2026-01-01');
+  });
+
+  it('throws als id niet bestaat', () => {
+    const db = { versie: 1, klanten: [], voorzieningen: [] };
+    expect(() => updateVoorziening(db, 'fantoom', { naam: 'X' })).toThrow();
+  });
+});
+
+describe('deleteVoorziening', () => {
+  it('verwijdert voorziening', () => {
+    const db = {
+      versie: 1,
+      klanten: [{ id: 'u' }],
+      voorzieningen: [
+        { id: 'a', klant_id: 'u', naam: 'A' },
+        { id: 'b', klant_id: 'u', naam: 'B' }
+      ]
+    };
+    const newDb = deleteVoorziening(db, 'a');
+    expect(newDb.voorzieningen).toHaveLength(1);
+    expect(newDb.voorzieningen[0].id).toBe('b');
+  });
+});
+
+describe('getVoorzieningenVoor', () => {
+  it('returnt alleen voorzieningen van gegeven klant_id', () => {
+    const db = {
+      versie: 1,
+      klanten: [{ id: 'a' }, { id: 'b' }],
+      voorzieningen: [
+        { id: 'v1', klant_id: 'a' },
+        { id: 'v2', klant_id: 'b' },
+        { id: 'v3', klant_id: 'a' }
+      ]
+    };
+    const v = getVoorzieningenVoor(db, 'a');
+    expect(v).toHaveLength(2);
+    expect(v.map(x => x.id)).toEqual(['v1', 'v3']);
+  });
+
+  it('returnt lege array bij onbekende klant_id', () => {
+    const db = { versie: 1, klanten: [], voorzieningen: [] };
+    expect(getVoorzieningenVoor(db, 'onbekend')).toEqual([]);
   });
 });
