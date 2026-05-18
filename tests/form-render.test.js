@@ -508,3 +508,51 @@ describe('renderSection1Projectgegevens — fase 3 entity-picker', () => {
     expect(container.querySelector('[data-action="voorziening-delete"]').disabled).toBe(true);
   });
 });
+
+describe('bindFields — idempotency', () => {
+  it('zet dataset.boundField marker zodat elementen niet opnieuw gebound worden', () => {
+    const state = createState();
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+
+    renderSection1Projectgegevens(container, state);
+    renderSection1Projectgegevens(container, state);
+    renderSection1Projectgegevens(container, state);
+
+    const inputs = container.querySelectorAll('[data-field]');
+    expect(inputs.length).toBeGreaterThan(0);
+    inputs.forEach(input => {
+      expect(input.dataset.boundField).toBe('1');
+    });
+
+    document.body.removeChild(container);
+  });
+
+  it('triggert setField maar één keer bij input, ook na herhaalde rendering', () => {
+    const state = createState();
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+
+    renderSection1Projectgegevens(container, state);
+    renderSection1Projectgegevens(container, state);
+    renderSection1Projectgegevens(container, state);
+
+    const inputs = container.querySelectorAll('[data-field="locatie.bedrijfsnaam"]');
+    expect(inputs.length).toBeGreaterThan(0);
+    const input = inputs[inputs.length - 1];
+
+    let setCallCount = 0;
+    Object.defineProperty(state.locatie, 'bedrijfsnaam', {
+      configurable: true,
+      get() { return this._bn || ''; },
+      set(v) { this._bn = v; setCallCount++; }
+    });
+
+    input.value = 'TestBedrijf';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+
+    expect(setCallCount).toBe(1);
+
+    document.body.removeChild(container);
+  });
+});

@@ -14,6 +14,8 @@ function bindFields(container, state) {
   container.querySelectorAll('[data-field]').forEach(el => {
     const path = el.dataset.field;
     el.value = getField(state, path) ?? '';
+    if (el.dataset.boundField === '1') return;
+    el.dataset.boundField = '1';
     el.addEventListener('input', () => setField(state, path, el.value));
   });
 }
