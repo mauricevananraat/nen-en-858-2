@@ -50,7 +50,7 @@ export function refreshKlantDropdown(container) {
 
 // bindKlantDropdown is niet idempotent — een tweede aanroep dupliceert listeners.
 // Guard via dataset-marker zodat onbedoeld dubbel binden faalt-safe is.
-export function bindKlantDropdown(container, state, syncDom) {
+export function bindKlantDropdown(container, state, syncDom, onKlantChange) {
   if (container.dataset.klantDropdownBound === '1') return;
   container.dataset.klantDropdownBound = '1';
 
@@ -59,7 +59,6 @@ export function bindKlantDropdown(container, state, syncDom) {
   const editBtn = container.querySelector('[data-action="klant-edit"]');
   const deleteBtn = container.querySelector('[data-action="klant-delete"]');
 
-  // Tracker voor vorige selectie zodat cancel-flow daar naar terug kan keren.
   let previousValue = '';
 
   select.addEventListener('change', () => {
@@ -68,6 +67,7 @@ export function bindKlantDropdown(container, state, syncDom) {
       previousValue = '';
       editBtn.disabled = true;
       deleteBtn.disabled = true;
+      if (onKlantChange) onKlantChange(null);
       return;
     }
     const db = loadDb();
@@ -88,6 +88,7 @@ export function bindKlantDropdown(container, state, syncDom) {
     previousValue = klantId;
     editBtn.disabled = false;
     deleteBtn.disabled = false;
+    if (onKlantChange) onKlantChange(klantId);
   });
 
   deleteBtn.addEventListener('click', () => {
@@ -113,6 +114,7 @@ export function bindKlantDropdown(container, state, syncDom) {
     previousValue = '';
     editBtn.disabled = true;
     deleteBtn.disabled = true;
+    if (onKlantChange) onKlantChange(null);
   });
 }
 

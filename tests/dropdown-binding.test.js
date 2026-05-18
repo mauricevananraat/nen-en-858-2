@@ -443,3 +443,63 @@ describe('applyVoorzieningToState', () => {
     expect(s.installatie.merk).toBe('');
   });
 });
+
+describe('bindKlantDropdown — onKlantChange callback', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('roept onKlantChange aan na klant-keuze met klant-id', () => {
+    saveDb({
+      versie: 1,
+      klanten: [{ id: 'a', bedrijfsnaam: 'A', opdrachtgever_zelfde_als_locatie: true }],
+      voorzieningen: []
+    });
+    const container = makeContainer();
+    const state = createState();
+    let receivedId = null;
+    bindKlantDropdown(container, state, null, (klantId) => { receivedId = klantId; });
+    const select = container.querySelector('[data-picker="klant"]');
+    select.value = 'a';
+    select.dispatchEvent(new Event('change'));
+    expect(receivedId).toBe('a');
+  });
+
+  it('roept onKlantChange met null bij dropdown-leegmaken', () => {
+    saveDb({
+      versie: 1,
+      klanten: [{ id: 'a', bedrijfsnaam: 'A', opdrachtgever_zelfde_als_locatie: true }],
+      voorzieningen: []
+    });
+    const container = makeContainer();
+    const state = createState();
+    let receivedId = 'placeholder';
+    bindKlantDropdown(container, state, null, (klantId) => { receivedId = klantId; });
+    const select = container.querySelector('[data-picker="klant"]');
+    select.value = '';
+    select.dispatchEvent(new Event('change'));
+    expect(receivedId).toBeNull();
+  });
+
+  it('roept onKlantChange NIET aan bij confirm-cancel (state niet overschreven)', () => {
+    saveDb({
+      versie: 1,
+      klanten: [{ id: 'a', bedrijfsnaam: 'Nieuw', opdrachtgever_zelfde_als_locatie: true }],
+      voorzieningen: []
+    });
+    const container = makeContainer();
+    const state = createState();
+    state.locatie.bedrijfsnaam = 'Bestaand';
+    let called = false;
+    bindKlantDropdown(container, state, null, () => { called = true; });
+
+    const origConfirm = window.confirm;
+    window.confirm = () => false;
+    try {
+      const select = container.querySelector('[data-picker="klant"]');
+      select.value = 'a';
+      select.dispatchEvent(new Event('change'));
+      expect(called).toBe(false);
+    } finally {
+      window.confirm = origConfirm;
+    }
+  });
+});
